@@ -935,7 +935,7 @@
                     // Substitua "YOUR_API_KEY" pela sua chave real antes de usar.
                     // É recomendado o uso de variáveis de ambiente para gerir esta chave em produção.
                     const firebaseConfig = {
-                        apiKey: "AIzaSyDRFR1nPHF2qkDEzNhEalwhM6gkW62u2NU",
+                        apiKey: "YOUR_API_KEY",
                         authDomain: "plataforma-gestao-narisrec.firebaseapp.com",
                         projectId: "plataforma-gestao-narisrec",
                         storageBucket: "plataforma-gestao-narisrec.appspot.com",
@@ -2049,6 +2049,12 @@
 
                 // Gráfico
                 const materiaPrimaAggr = {};
+                filteredMateriaPrima.forEach(reg => {
+                    (reg.quantidades || []).forEach(item => {
+                        const pesoKg = item.unit === 't' ? item.qty * 1000 : item.qty;
+                        materiaPrimaAggr[item.nome] = (materiaPrimaAggr[item.nome] || 0) + pesoKg;
+                    });
+                });
                 filteredEcoponto.forEach(reg => {
                     Object.entries(reg.materiasPrimas || {}).forEach(([nome, peso]) => {
                         materiaPrimaAggr[nome] = (materiaPrimaAggr[nome] || 0) + peso;
@@ -2377,5 +2383,4 @@
     </script>
 </body>
 </html>
-
 
