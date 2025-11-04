@@ -336,9 +336,6 @@
             <div id="ecoponto-page" class="page">
                  <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Dashboard Ecoponto</h2>
-                    <button id="delete-all-ecoponto-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-                        <i class="fas fa-trash-alt"></i> Apagar Todos os Registos
-                    </button>
                 </div>
                  <!-- Filters -->
                  <div class="bg-white p-4 rounded-lg shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -931,11 +928,11 @@
             // --- INICIALIZAÇÃO FIREBASE ---
             function initFirebase() {
                 try {
-                    // ATENÇÃO: A chave da API foi removida para segurança.
-                    // Substitua "YOUR_API_KEY" pela sua chave real antes de usar.
-                    // É recomendado o uso de variáveis de ambiente para gerir esta chave em produção.
+                    // ATENÇÃO: A chave da API deve ser gerida de forma segura.
+                    // Substitua o placeholder "YOUR_API_KEY" pela sua chave real.
+                    // Recomenda-se vivamente o uso de variáveis de ambiente ou um serviço de gestão de segredos (como o Firebase App Check) em produção.
                     const firebaseConfig = {
-                        apiKey: "YOUR_API_KEY",
+                        apiKey: "YOUR_API_KEY", // <-- SUBSTITUIR PELA SUA CHAVE
                         authDomain: "plataforma-gestao-narisrec.firebaseapp.com",
                         projectId: "plataforma-gestao-narisrec",
                         storageBucket: "plataforma-gestao-narisrec.appspot.com",
