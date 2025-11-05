@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Gestão de Resíduos</title>
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bibliotecas para Geração de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gray-100">
+
+    <!-- Auth Container -->
+    <div id="auth-container" class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-md">
+            <!-- Login Form -->
+            <div id="login-view">
+                <form id="login-form" class="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4">
+                    <div class="mb-8 text-center">
+                        <img src="./logo.png" alt="Logo Narisrec" class="mx-auto max-w-[150px]">
+                        <h2 class="text-2xl font-bold text-gray-800 mt-4">Bem-vindo de volta!</h2>
+                        <p class="text-gray-500">Faça login para continuar</p>
+                    </div>
+                     <div id="login-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert"></div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="login-email">Email</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="login-email" type="email" placeholder="Email" required>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-gray-700 text-sm font-bold" for="login-password">Password</label>
+                            <a href="#" id="forgot-password-link" class="inline-block align-baseline font-bold text-sm text-emerald-600 hover:text-emerald-800">
+                                Esqueci a senha
+                            </a>
+                        </div>
+                        <div class="relative mt-2">
+                             <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="login-password" type="password" placeholder="******************" required>
+                             <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
+                                 <i class="fas fa-eye text-gray-500 cursor-pointer" id="password-toggle"></i>
+                             </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-6">
+                        <button id="login-btn" class="btn-primary w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center gap-2" type="submit">
+                            Entrar
+                        </button>
+                    </div>
+                    <p class="text-center text-gray-500 text-sm mt-6">
+                        Não tem uma conta? <a href="#" id="show-register" class="font-bold text-emerald-600 hover:text-emerald-800">Crie uma aqui</a>.
+                    </p>
+                </form>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-view" class="hidden">
+                 <form id="register-form" class="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4">
+                    <div class="mb-8 text-center">
+                         <img src="./logo.png" alt="Logo Narisrec" class="mx-auto max-w-[150px]">
+                        <h2 class="text-2xl font-bold text-gray-800 mt-4">Criar Conta</h2>
+                        <p class="text-gray-500">Comece a gerir os seus resíduos hoje</p>
+                    </div>
+                     <div id="register-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert"></div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="register-name">Nome</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="register-name" type="text" placeholder="Nome Completo" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="register-email">Email</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="register-email" type="email" placeholder="Email" required>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="register-password">Password</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="register-password" type="password" placeholder="******************" required>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button class="btn-primary w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                            Registar
+                        </button>
+                    </div>
+                     <p class="text-center text-gray-500 text-sm mt-6">
+                        Já tem uma conta? <a href="#" id="show-login-from-register" class="font-bold text-emerald-600 hover:text-emerald-800">Faça login</a>.
+                    </p>
+                </form>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div id="forgot-password-view" class="hidden">
+                <form id="forgot-password-form" class="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4">
+                    <div class="mb-8 text-center">
+                        <img src="./logo.png" alt="Logo Narisrec" class="mx-auto max-w-[150px]">
+                        <h2 class="text-2xl font-bold text-gray-800 mt-4">Recuperar Senha</h2>
+                        <p class="text-gray-500">Insira o seu email para receber o link de recuperação</p>
+                    </div>
+                     <div id="forgot-password-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert"></div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="forgot-password-email">Email</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="forgot-password-email" type="email" placeholder="Email" required>
+                    </div>
+                    <div class="flex items-center justify-between mt-6">
+                        <button id="forgot-password-btn" class="btn-primary w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center gap-2" type="submit">
+                            Enviar Email de Recuperação
+                        </button>
+                    </div>
+                    <p class="text-center text-gray-500 text-sm mt-6">
+                        Lembrou-se da senha? <a href="#" id="show-login-from-forgot" class="font-bold text-emerald-600 hover:text-emerald-800">Voltar ao login</a>.
+                    </p>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app-container" class="hidden h-screen w-full">
+        <!-- Sidebar -->
+        <aside class="sidebar w-64 min-h-screen p-4 flex flex-col">
+            <div class="logo mb-8">
+                <img src="./logo.png" alt="Logo Narisrec">
+            </div>
+            <nav class="flex flex-col gap-2">
+                <a href="#" class="nav-link active" data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                <a href="#" class="nav-link" data-page="ecoponto"><i class="fas fa-map-marker-alt"></i> Ecoponto</a>
+                <a href="#" class="nav-link" data-page="ecoponto-form"><i class="fas fa-edit"></i> Formulário Ecoponto</a>
+                <a href="#" class="nav-link" data-page="clientes"><i class="fas fa-users"></i> Clientes</a>
+                <a href="#" class="nav-link" data-page="produtos"><i class="fas fa-box-open"></i> Produtos</a>
+                <a href="#" class="nav-link" data-page="equipamentos"><i class="fas fa-clipboard-list"></i> Equipamentos</a>
+                <a href="#" class="nav-link" data-page="materia-prima"><i class="fas fa-recycle"></i> Matéria-Prima</a>
+                <a href="#" class="nav-link" data-page="relatorios"><i class="fas fa-file-alt"></i> Relatórios</a>
+                <a href="#" class="nav-link" data-page="utilizadores"><i class="fas fa-user-cog"></i> Utilizadores</a>
+            </nav>
+            <div class="mt-auto p-4 text-center text-sm">
+                <p>&copy; <span id="copyright-year"></span> Narisrec</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 lg:p-10 overflow-y-auto">
+            <header class="flex justify-between items-center mb-8">
+                <h1 id="page-title" class="text-3xl font-bold text-gray-800">Dashboard</h1>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <img src="https://placehold.co/40x40/059669/ffffff?text=U" alt="User Avatar" class="w-10 h-10 rounded-full" id="user-avatar">
+                        <div>
+                            <p id="user-name" class="font-semibold">Utilizador</p>
+                            <p id="user-email" class="text-sm text-gray-500">email@example.com</p>
+                        </div>
+                    </div>
+                    <button id="logout-btn" class="text-gray-500 hover:text-emerald-600" title="Terminar Sessão">
+                        <i class="fas fa-sign-out-alt fa-lg"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page active">
+                <!-- Filters -->
+                <div class="bg-white p-4 rounded-lg shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <label for="cliente-filter" class="text-sm font-medium">Cliente:</label>
+                        <select id="cliente-filter" class="border border-gray-300 rounded-md px-3 py-2 w-48">
+                            <option value="todos">Todos os Clientes</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="data-inicio" class="text-sm font-medium">Data Início:</label>
+                        <input type="date" id="data-inicio" class="border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="data-fim" class="text-sm font-medium">Data Fim:</label>
+                        <input type="date" id="data-fim" class="border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="filter-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i class="fas fa-filter"></i> Filtrar</button>
+                        <button id="clear-filter-btn" class="btn-secondary px-4 py-2 rounded-lg flex items-center gap-2"><i class="fas fa-undo"></i> Limpar</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                     <div class="stat-card">
+                        <div class="icon"><i class="fas fa-truck"></i></div>
+                        <div class="min-w-0">
+                            <p class="text-gray-500 break-words">Nº de Recolhas</p>
+                            <p id="stat-recolhas" class="text-2xl font-bold truncate">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card"> <div class="icon"><i class="fas fa-truck-loading"></i></div> <div class="min-w-0"><p class="text-gray-500 break-words">Resíduos Recolhidos</p><p id="stat-residuos" class="text-2xl font-bold truncate">0 kg</p></div> </div>
+                    <div class="stat-card"> <div class="icon"><i class="fas fa-boxes"></i></div> <div class="min-w-0"><p class="text-gray-500 break-words">Equipamentos</p><p id="stat-equipamentos" class="text-2xl font-bold truncate">0</p></div> </div>
+                    <div class="stat-card"> <div class="icon"><i class="fas fa-recycle"></i></div> <div class="min-w-0"><p class="text-gray-500 break-words">Matéria-Prima Recuperada</p><p id="stat-materia-prima" class="text-2xl font-bold truncate">0 kg</p></div> </div>
+                    <div class="stat-card"> <div class="icon"><i class="fas fa-leaf"></i></div> <div class="min-w-0"><p class="text-gray-500 break-words">CO₂e Evitado</p><p id="stat-co2" class="text-2xl font-bold truncate">0 kg</p></div> </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white p-6 rounded-lg shadow-sm"> <h3 class="font-semibold mb-4">Recolhas nos Últimos Meses</h3> <canvas id="recolhasChart"></canvas> </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm"> <h3 class="font-semibold mb-4">Top 5 Tipos de Equipamento</h3> <canvas id="topEquipamentosChart"></canvas> </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Secção de Equipamentos -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Equipamentos Mais Frequentes</h3>
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-2">Equipamento</th>
+                                    <th class="p-2 text-right">Unidades</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-equipamentos-body">
+                               <!-- Dados dinâmicos -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Secção de Matéria-Prima -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Top Matérias-Primas Recuperadas</h3>
+                         <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-2">Matéria-Prima</th>
+                                    <th class="p-2 text-right">Peso Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-materia-prima-body">
+                               <!-- Dados dinâmicos -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ecoponto Page -->
+            <div id="ecoponto-page" class="page">
+                 <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Dashboard Ecoponto</h2>
+                </div>
+                 <!-- Filters -->
+                 <div class="bg-white p-4 rounded-lg shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <label for="ecoponto-cliente-filter" class="text-sm font-medium">Cliente:</label>
+                        <select id="ecoponto-cliente-filter" class="border border-gray-300 rounded-md px-3 py-2 w-48">
+                            <option value="todos">Todos os Clientes</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="ecoponto-data-inicio" class="text-sm font-medium">Data Início:</label>
+                        <input type="date" id="ecoponto-data-inicio" class="border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="ecoponto-data-fim" class="text-sm font-medium">Data Fim:</label>
+                        <input type="date" id="ecoponto-data-fim" class="border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="ecoponto-filter-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i class="fas fa-filter"></i> Filtrar</button>
+                        <button id="ecoponto-clear-filter-btn" class="btn-secondary px-4 py-2 rounded-lg flex items-center gap-2"><i class="fas fa-undo"></i> Limpar</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-truck"></i></div>
+                        <div class="min-w-0">
+                            <p class="text-gray-500 break-words">Nº de Entradas</p>
+                            <p id="stat-recolhas-ecoponto" class="text-2xl font-bold truncate">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card"> <div class="icon"><i class="fas fa-truck-loading"></i></div> <div class="min-w-0"><p class="text-gray-500 break-words">Resíduos (Ecoponto)</p><p id="stat-residuos-ecoponto" class="text-2xl font-bold truncate">0 kg</p></div> </div>
+                    <div class="stat-card"> <div class="icon"><i class="fas fa-boxes"></i></div> <div class="min-w-0"><p class="text-gray-500 break-words">Equipamentos (Ecoponto)</p><p id="stat-equipamentos-ecoponto" class="text-2xl font-bold truncate">0</p></div> </div>
+                    <div class="stat-card"> <div class="icon"><i class="fas fa-recycle"></i></div> <div class="min-w-0"><p class="text-gray-500 break-words">Matéria-Prima (Ecoponto)</p><p id="stat-materia-prima-ecoponto" class="text-2xl font-bold truncate">0 kg</p></div> </div>
+                    <div class="stat-card"> <div class="icon"><i class="fas fa-leaf"></i></div> <div class="min-w-0"><p class="text-gray-500 break-words">CO₂e Evitado (Ecoponto)</p><p id="stat-co2-ecoponto" class="text-2xl font-bold truncate">0 kg</p></div> </div>
+                </div>
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Secção de Equipamentos (Ecoponto) -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Equipamentos Mais Frequentes (Ecoponto)</h3>
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-2">Equipamento</th>
+                                    <th class="p-2 text-right">Unidades</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ecoponto-top-equipamentos-body">
+                               <!-- Dados dinâmicos -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Secção de Matéria-Prima (Ecoponto) -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Top Matérias-Primas (Ecoponto)</h3>
+                         <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-2">Matéria-Prima</th>
+                                    <th class="p-2 text-right">Peso Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ecoponto-top-materia-prima-body">
+                               <!-- Dados dinâmicos -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Tabela de Registos Ecoponto -->
+                <div class="bg-white p-6 rounded-lg shadow-sm mt-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Todos os Registos do Ecoponto</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-3">ID</th>
+                                    <th class="p-3">Data</th>
+                                    <th class="p-3">Cliente</th>
+                                    <th class="p-3">Responsável</th>
+                                    <th class="p-3">Total Matéria-Prima (kg)</th>
+                                    <th class="p-3">Total Equipamentos (unid.)</th>
+                                    <th class="p-3">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ecoponto-registos-list">
+                                <!-- Dados dinâmicos aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ecoponto Form Page -->
+            <div id="ecoponto-form-page" class="page">
+                 <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h2 id="ecoponto-form-title" class="text-2xl font-bold text-gray-800 mb-6">Novo Registo de Ecoponto</h2>
+                    <form id="ecoponto-registo-form">
+                        <input type="hidden" id="ecoponto-form-id">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                             <div>
+                                <label for="ecoponto-form-cliente-select" class="block text-sm font-medium text-gray-700">Cliente</label>
+                                <select id="ecoponto-form-cliente-select" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"></select>
+                            </div>
+                            <div>
+                                <label for="ecoponto-form-data" class="block text-sm font-medium text-gray-700">Data</label>
+                                <input type="date" id="ecoponto-form-data" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+                        </div>
+
+                        <h3 class="text-xl font-bold text-gray-800 mt-8 mb-4 border-b pb-2">Matéria-Prima</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- Metal -->
+                            <div class="bg-gray-50 p-4 rounded-lg border">
+                                <label class="flex items-center gap-3 text-lg font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-cogs text-gray-500"></i> Metal
+                                </label>
+                                <input type="number" step="0.01" id="ecoponto-form-metal" placeholder="Peso (kg)" class="w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+                            <!-- Plásticos -->
+                            <div class="bg-gray-50 p-4 rounded-lg border">
+                                <label class="flex items-center gap-3 text-lg font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-bottle-water text-gray-500"></i> Plásticos
+                                </label>
+                                <input type="number" step="0.01" id="ecoponto-form-plasticos" placeholder="Peso (kg)" class="w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+                             <!-- Vidro -->
+                            <div class="bg-gray-50 p-4 rounded-lg border">
+                                <label class="flex items-center gap-3 text-lg font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-wine-bottle text-gray-500"></i> Vidro
+                                </label>
+                                <input type="number" step="0.01" id="ecoponto-form-vidro" placeholder="Peso (kg)" class="w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+                             <!-- Papel -->
+                            <div class="bg-gray-50 p-4 rounded-lg border">
+                                <label class="flex items-center gap-3 text-lg font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-newspaper text-gray-500"></i> Papel
+                                </label>
+                                <input type="number" step="0.01" id="ecoponto-form-papel" placeholder="Peso (kg)" class="w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+                        </div>
+
+                        <h3 class="text-xl font-bold text-gray-800 mt-8 mb-4 border-b pb-2">Equipamentos</h3>
+                        <div id="ecoponto-form-equipamentos-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <!-- Equipamentos dinâmicos aqui -->
+                        </div>
+
+                        <div class="flex justify-end mt-8">
+                            <button type="submit" class="btn-primary px-6 py-2 rounded-lg flex items-center justify-center gap-2 w-36 h-10">
+                                Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Clientes Page -->
+            <div id="clientes-page" class="page">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Lista de Clientes</h2>
+                        <button id="add-cliente-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i class="fas fa-plus"></i> Novo Cliente</button>
+                    </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50"> <tr> <th class="p-3">Nome</th> <th class="p-3">NIF</th> <th class="p-3">Tipo</th> <th class="p-3">Contacto</th> <th class="p-3">Email</th> <th class="p-3">Ações</th> </tr> </thead>
+                        <tbody id="clientes-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Produtos Page -->
+            <div id="produtos-page" class="page">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Lista de Produtos</h2>
+                        <button id="add-produto-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i class="fas fa-plus"></i> Novo Produto</button>
+                    </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50"> <tr> <th class="p-3">ID</th> <th class="p-3">Nome do Produto</th> <th class="p-3">Categoria</th> <th class="p-3">Origem</th> <th class="p-3">Ações</th> </tr> </thead>
+                        <tbody id="produtos-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Equipamentos Page (antigo Inventário) -->
+            <div id="equipamentos-page" class="page">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Registos de Equipamentos</h2>
+                        <button id="add-equipamento-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i class="fas fa-plus"></i> Novo Registo</button>
+                    </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50"> <tr> <th class="p-3">Ref. Recolha</th> <th class="p-3">Cliente</th> <th class="p-3">Data Início</th> <th class="p-3">Origem</th> <th class="p-3">Responsável</th> <th class="p-3">Ações</th> </tr> </thead>
+                        <tbody id="equipamentos-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Matéria-Prima Page -->
+            <div id="materia-prima-page" class="page">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Registos de Matéria-Prima</h2>
+                        <button id="add-materia-prima-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i class="fas fa-plus"></i> Novo Registo</button>
+                    </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50"> <tr> <th class="p-3">Ref. Recolha</th> <th class="p-3">Cliente</th> <th class="p-3">Data</th><th class="p-3">Origem</th> <th class="p-3">Responsável</th> <th class="p-3">Ações</th> </tr> </thead>
+                        <tbody id="materia-prima-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Relatórios Page -->
+            <div id="relatorios-page" class="page">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Gerar Relatórios</h2>
+                    <div class="bg-gray-50 p-4 rounded-md border flex flex-wrap items-center gap-4">
+                        <div>
+                            <label for="report-cliente-filter" class="block text-sm font-medium text-gray-700">Cliente</label>
+                            <select id="report-cliente-filter" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                                <option value="todos">Todos os Clientes</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="report-data-inicio" class="block text-sm font-medium text-gray-700">Data Início</label>
+                            <input type="date" id="report-data-inicio" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                        </div>
+                        <div>
+                            <label for="report-type" class="block text-sm font-medium text-gray-700">Tipo de Relatório</label>
+                            <select id="report-type" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                                <option value="geral">Geral</option>
+                                <option value="producao">Produção</option>
+                                <option value="ecoponto">Ecoponto</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="report-data-fim" class="block text-sm font-medium text-gray-700">Data Fim</label>
+                            <input type="date" id="report-data-fim" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                        </div>
+                        <div class="self-end">
+                            <button id="generate-report-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center justify-center gap-2 w-48 h-10">
+                                Gerar PDF
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Report Preview Area -->
+                    <div id="report-preview-container" class="mt-8"></div>
+                </div>
+            </div>
+
+            <!-- Utilizadores Page -->
+            <div id="utilizadores-page" class="page">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Gestão de Utilizadores</h2>
+                        <button id="add-user-btn" class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2"><i class="fas fa-plus"></i> Novo Utilizador</button>
+                    </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50"> <tr> <th class="p-3">Nome</th> <th class="p-3">Email</th> <th class="p-3">Função</th> <th class="p-3">Estado</th> <th class="p-3">Ações</th> </tr> </thead>
+                        <tbody id="users-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content max-w-sm">
+            <h3 id="confirm-modal-title" class="text-xl font-bold mb-4">Confirmar Ação</h3>
+            <p id="confirm-modal-body" class="mb-6">Tem a certeza que quer apagar este registo? Esta ação não pode ser desfeita.</p>
+            <div class="flex justify-end gap-4">
+                <button type="button" class="close-modal btn-secondary px-4 py-2 rounded">Cancelar</button>
+                <button id="confirm-modal-confirm-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded">Apagar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal">
+        <div class="modal-content max-w-sm">
+            <h3 id="info-modal-title" class="text-xl font-bold mb-4"></h3>
+            <p id="info-modal-body" class="mb-6"></p>
+            <div class="flex justify-end gap-4">
+                <button type="button" class="close-modal btn-primary px-4 py-2 rounded">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="cliente-modal" class="modal"> <div class="modal-content"> <h3 class="text-2xl font-bold mb-4" id="cliente-modal-title"></h3> <form id="cliente-form"> <input type="hidden" id="cliente-id"> <div class="mb-4"> <label for="cliente-nome" class="block">Nome</label> <input type="text" id="cliente-nome" class="w-full border p-2 rounded" required> </div> <div class="mb-4"> <label for="cliente-nif" class="block">NIF</label> <input type="text" id="cliente-nif" class="w-full border p-2 rounded" required> </div> <div class="mb-4"> <label for="cliente-tipo" class="block">Tipo</label> <select id="cliente-tipo" class="w-full border p-2 rounded"><option value="Produção">Produção</option><option value="Ecoponto">Ecoponto</option></select> </div> <div class="mb-4"> <label for="cliente-contacto" class="block">Contacto</label> <input type="text" id="cliente-contacto" class="w-full border p-2 rounded"> </div> <div class="mb-4"> <label for="cliente-email" class="block">Email</label> <input type="email" id="cliente-email" class="w-full border p-2 rounded"> </div> <div class="flex justify-end gap-4"> <button type="button" class="close-modal btn-secondary px-4 py-2 rounded">Cancelar</button> <button type="submit" class="btn-primary px-4 py-2 rounded w-28 h-10 flex items-center justify-center">Salvar</button> </div> </form> </div> </div>
+    <div id="produto-modal" class="modal"> <div class="modal-content"> <h3 class="text-2xl font-bold mb-4" id="produto-modal-title"></h3> <form id="produto-form"> <input type="hidden" id="produto-id"> <div class="mb-4"> <label for="produto-nome" class="block">Nome do Produto</label> <input type="text" id="produto-nome" class="w-full border p-2 rounded" required> </div> <div class="mb-4"> <label for="produto-categoria" class="block">Categoria</label> <select id="produto-categoria" class="w-full border p-2 rounded"> <option value="Equipamento">Equipamento</option> <option value="Matéria-prima">Matéria-prima</option> </select> </div> <div class="mb-4"> <label for="produto-origem" class="block">Origem</label> <select id="produto-origem" class="w-full border p-2 rounded"><option value="Produção">Produção</option><option value="Ecoponto">Ecoponto</option></select> </div> <div class="flex justify-end gap-4"> <button type="button" class="close-modal btn-secondary px-4 py-2 rounded">Cancelar</button> <button type="submit" class="btn-primary px-4 py-2 rounded w-28 h-10 flex items-center justify-center">Salvar</button> </div> </form> </div> </div>
+
+    <div id="equipamento-modal" class="modal">
+        <div class="modal-content modal-content-lg">
+            <h3 id="equipamento-modal-title" class="text-2xl font-bold mb-4">Novo Registo de Equipamento</h3>
+            <form id="equipamento-form">
+                <input type="hidden" id="equipamento-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div><label for="ref-recolha-equipamento">Ref. Recolha:</label><input type="text" id="ref-recolha-equipamento" class="w-full border p-2 rounded mt-1"></div>
+                    <div><label for="equipamento-lote">Lote:</label><input type="text" id="equipamento-lote" class="w-full border p-2 rounded mt-1"></div>
+                    <div><label for="equipamento-cliente-select">Cliente:</label><select id="equipamento-cliente-select" class="w-full border p-2 rounded mt-1"></select></div>
+                    <div><label for="equipamento-data-inicio">Data Início:</label><input type="date" id="equipamento-data-inicio" class="w-full border p-2 rounded mt-1"></div>
+                    <div><label for="equipamento-data-fim">Data Fim:</label><input type="date" id="equipamento-data-fim" class="w-full border p-2 rounded mt-1"></div>
+                    <div>
+                        <label for="equipamento-origem">Origem:</label>
+                        <select id="equipamento-origem" class="w-full border p-2 rounded mt-1">
+                            <option value="Produção">Produção</option>
+                            <option value="Ecoponto">Ecoponto</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h4 class="font-semibold mt-6 mb-2 border-t pt-4">Adicionar Equipamento</h4>
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
+                    <div class="md:col-span-2">
+                        <label for="equipamento-item-tipo" class="block text-sm font-medium">Tipo</label>
+                        <div class="relative">
+                            <input type="text" id="equipamento-item-tipo" class="w-full border p-2 rounded mt-1" autocomplete="off">
+                            <div id="equipamento-tipo-results" class="absolute z-10 w-full bg-white border rounded mt-1 max-h-48 overflow-y-auto hidden"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="equipamento-item-marca" class="block text-sm font-medium">Marca</label>
+                        <input type="text" id="equipamento-item-marca" class="w-full border p-2 rounded mt-1">
+                    </div>
+                    <div>
+                        <label for="equipamento-item-modelo" class="block text-sm font-medium">Modelo</label>
+                        <input type="text" id="equipamento-item-modelo" class="w-full border p-2 rounded mt-1">
+                    </div>
+                    <div>
+                        <label for="equipamento-item-nserie" class="block text-sm font-medium">Nº Serie</label>
+                        <input type="text" id="equipamento-item-nserie" class="w-full border p-2 rounded mt-1">
+                    </div>
+                    <div>
+                        <label for="equipamento-item-qty" class="block text-sm font-medium">Qtd.</label>
+                        <input type="number" id="equipamento-item-qty" class="w-full border p-2 rounded mt-1" value="1" min="1">
+                    </div>
+                    <button type="button" id="add-equipamento-item-btn" class="btn-secondary px-4 py-2 rounded-lg h-10">Adicionar</button>
+                </div>
+
+                <h4 class="font-semibold mt-6 mb-2">Equipamentos Adicionados (<span id="equipamento-total-unidades">0</span>)</h4>
+                <div class="max-h-60 overflow-y-auto border rounded-lg">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="p-2">Tipo</th>
+                                <th class="p-2">Marca</th>
+                                <th class="p-2">Modelo</th>
+                                <th class="p-2">Qtd.</th>
+                                <th class="p-2">Nº Serie</th>
+                                <th class="p-2">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="equipamentos-adicionados-list">
+                            <!-- Items will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6">
+                    <label for="equipamento-peso-total" class="block text-sm font-medium text-gray-700">Peso Total (Kg):</label>
+                    <input type="number" step="0.01" id="equipamento-peso-total" class="w-full border p-2 rounded mt-1" placeholder="Opcional">
+                </div>
+                <div class="mt-4">
+                    <label for="equipamento-observacoes" class="block text-sm font-medium text-gray-700">Observações:</label>
+                    <textarea id="equipamento-observacoes" rows="3" class="w-full border p-2 rounded mt-1"></textarea>
+                </div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" class="close-modal btn-secondary px-4 py-2 rounded">Cancelar</button>
+                    <button type="submit" class="btn-primary px-4 py-2 rounded w-28 h-10 flex items-center justify-center">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="materia-prima-modal" class="modal">
+        <div class="modal-content modal-content-lg">
+            <h3 id="materia-prima-modal-title" class="text-2xl font-bold mb-4">Novo Registo de Matéria-Prima</h3>
+            <form id="materia-prima-form">
+                <input type="hidden" id="materia-prima-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div><label for="ref-recolha-materia">Ref. Recolha:</label><input type="text" id="ref-recolha-materia" class="w-full border p-2 rounded mt-1"></div>
+                    <div><label for="materia-prima-lote">Lote:</label><input type="text" id="materia-prima-lote" class="w-full border p-2 rounded mt-1"></div>
+                    <div><label for="materia-prima-cliente-select">Cliente:</label><select id="materia-prima-cliente-select" class="w-full border p-2 rounded mt-1"></select></div>
+                    <div><label for="materia-prima-data-inicio">Data Início:</label><input type="date" id="materia-prima-data-inicio" class="w-full border p-2 rounded mt-1"></div>
+                    <div><label for="materia-prima-data-fim">Data Fim:</label><input type="date" id="materia-prima-data-fim" class="w-full border p-2 rounded mt-1"></div>
+                    <div> <label for="materia-prima-origem">Origem:</label> <select id="materia-prima-origem" class="w-full border p-2 rounded mt-1"> <option value="Produção">Produção</option> <option value="Ecoponto">Ecoponto</option> </select> </div>
+                </div>
+                <h4 class="font-semibold mt-6 mb-2">Matérias-Primas</h4>
+                <div id="materia-prima-quantidades-container" class="max-h-72 overflow-y-auto p-1 grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <!-- Cards de Matéria-Prima serão injetados aqui -->
+                </div>
+                <div class="mt-4 font-bold text-right"> Peso Total (Kg): <span id="materia-prima-peso-total">0.00</span> </div>
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="button" class="close-modal btn-secondary px-4 py-2 rounded">Cancelar</button>
+                    <button type="submit" class="btn-primary px-4 py-2 rounded w-28 h-10 flex items-center justify-center">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="user-modal" class="modal"> <div class="modal-content"> <h3 class="text-2xl font-bold mb-4" id="user-modal-title"></h3> <form id="user-form"> <input type="hidden" id="user-id"> <div class="mb-4"> <label for="user-nome" class="block">Nome</label> <input type="text" id="user-nome" class="w-full border p-2 rounded" required> </div> <div class="mb-4"> <label for="user-email" class="block">Email</label> <input type="email" id="user-email" class="w-full border p-2 rounded" readonly> </div> <div class="mb-4"> <label for="user-funcao" class="block">Função</label> <select id="user-funcao" class="w-full border p-2 rounded"> <option value="Admin">Admin</option> <option value="Utilizador">Utilizador</option> </select> </div> <div class="flex justify-end gap-4"> <button type="button" class="close-modal btn-secondary px-4 py-2 rounded">Cancelar</button> <button type="submit" class="btn-primary px-4 py-2 rounded w-28 h-10 flex items-center justify-center">Salvar</button> </div> </form> </div> </div>
+    <script src="js/firebase-config.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
