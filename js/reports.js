@@ -345,9 +345,88 @@ function handleGenerateReport() {
     generateReport().finally(() => setButtonLoadingState(btn, false, "Gerar PDF"));
 }
 
+function updateTotalPeso() {
+    let total = 0;
+    document.querySelectorAll('.materia-prima-card').forEach(card => {
+        const qtyInput = card.querySelector('.materia-prima-qty');
+        const unitSelect = card.querySelector('.materia-prima-unit');
+        let qty = parseFloat(qtyInput.value) || 0;
+
+        if (unitSelect.value === 't') {
+            qty = qty * 1000;
+        }
+        total += qty;
+    });
+    document.getElementById('materia-prima-peso-total').textContent = total.toFixed(2);
+}
+
+function addEquipamentoToTable(item) {
+    const list = document.getElementById('equipamentos-adicionados-list');
+    const row = document.createElement('tr');
+    row.className = 'border-b';
+    row.innerHTML = `
+        <td class="p-2">${item.tipo}</td>
+        <td class="p-2">${item.marca}</td>
+        <td class="p-2">${item.modelo}</td>
+        <td class="p-2">${item.qty}</td>
+        <td class="p-2">${item.nSerie}</td>
+        <td class="p-2">
+            <button type="button" class="remove-equipamento-item text-red-500"><i class="fas fa-trash"></i></button>
+        </td>
+    `;
+    list.appendChild(row);
+
+    row.querySelector('.remove-equipamento-item').addEventListener('click', () => {
+        row.remove();
+        updateTotalUnidades();
+    });
+
+    updateTotalUnidades();
+}
+
+function setupEquipamentoSearch() {
+    const searchInput = document.getElementById('equipamento-item-tipo');
+    const searchResultsContainer = document.getElementById('equipamento-tipo-results');
+
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase();
+        if (query.length < 2) {
+            searchResultsContainer.innerHTML = '';
+            searchResultsContainer.classList.add('hidden');
+            return;
+        }
+
+        const equipamentosDisponiveis = getLiveProdutos().filter(p => p.categoria === 'Equipamento' && p.origem === 'Produção');
+        const filtered = equipamentosDisponiveis.filter(p => p.nome.toLowerCase().includes(query));
+
+        if (filtered.length > 0) {
+            searchResultsContainer.innerHTML = filtered.map(p => `<div class="p-2 hover:bg-gray-100 cursor-pointer" data-nome="${p.nome}">${p.nome}</div>`).join('');
+            searchResultsContainer.classList.remove('hidden');
+        } else {
+            searchResultsContainer.classList.add('hidden');
+        }
+    });
+
+    searchResultsContainer.addEventListener('click', (e) => {
+        if (e.target.dataset.nome) {
+            searchInput.value = e.target.dataset.nome;
+            searchResultsContainer.classList.add('hidden');
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchResultsContainer.contains(e.target)) {
+            searchResultsContainer.classList.add('hidden');
+        }
+    });
+}
+
 export {
     handleGenerateReport,
     saveEcopontoRegisto,
     handleEcopontoListClick,
-    renderEcopontoFormEquipamentos
+    renderEcopontoFormEquipamentos,
+    updateTotalPeso,
+    addEquipamentoToTable,
+    setupEquipamentoSearch
 };
