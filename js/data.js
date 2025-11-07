@@ -2,6 +2,7 @@ import { onSnapshot, collection, doc, getDoc, addDoc, updateDoc, deleteDoc } fro
 import { db, appId } from './firebase-config.js';
 import { getUserId, getCurrentUserNome, getCurrentUserRole } from './auth.js';
 import { openModal, closeModal, setButtonLoadingState, showConfirmationModal, showInfoModal } from './ui.js';
+import { updateTotalPeso, addEquipamentoToTable, updateTotalUnidades } from './reports.js';
 
 let clientesUnsubscribe, produtosUnsubscribe, equipamentosUnsubscribe, materiaPrimaUnsubscribe, utilizadoresUnsubscribe, ecopontoRegistosUnsubscribe;
 let liveClientes = [];
@@ -146,8 +147,6 @@ function updateMainDashboard(equipamentosData, materiaPrimaData) {
     materiaPrimaData.forEach(reg => { (reg.quantidades || []).forEach(item => { const pesoKg = item.unit === 't' ? item.qty * 1000 : item.qty; materiaAggr[item.nome] = (materiaAggr[item.nome] || 0) + pesoKg; }); });
     const topMateriaPrima = Object.entries(materiaAggr).sort((a, b) => b[1] - a[1]).slice(0, 10);
     document.getElementById('top-materia-prima-body').innerHTML = topMateriaPrima.map(([nome, peso]) => `<tr><td class="p-2">${nome}</td><td class="p-2 text-right">${formatWeight(peso)}</td></tr>`).join('');
-
-     updateCharts(equipamentosData, materiaPrimaData);
 }
 
 function updateEcopontoDashboard(registosEcoponto) {
@@ -529,6 +528,216 @@ function getLiveProdutos() {
     return liveProdutos;
 }
 
+async function handleNewEquipamento() {
+    document.getElementById('equipamento-modal-title').textContent = 'Novo Registo de Equipamento';
+    document.getElementById('equipamento-form').reset();
+    document.getElementById('equipamento-id').value = '';
+    document.getElementById('equipamentos-adicionados-list').innerHTML = '';
+    updateTotalUnidades();
+    openModal('equipamento-modal');
+}
+
+async function saveEquipamento(e) {
+    e.preventDefault();
+    const button = e.currentTarget.querySelector('button[type="submit"]');
+    setButtonLoadingState(button, true);
+
+    const id = document.getElementById('equipamento-id').value;
+    const select = document.getElementById('equipamento-cliente-select');
+    const data = {
+        refRecolha: document.getElementById('ref-recolha-equipamento').value,
+        lote: document.getElementById('equipamento-lote').value,
+        clienteId: select.value,
+        clienteNome: select.options[select.selectedIndex].text,
+        dataInicio: document.getElementById('equipamento-data-inicio').value,
+        dataFim: document.getElementById('equipamento-data-fim').value,
+        origem: document.getElementById('equipamento-origem').value,
+        pesoTotal: document.getElementById('equipamento-peso-total').value,
+        observacoes: document.getElementById('equipamento-observacoes').value,
+        responsavelNome: getCurrentUserNome(),
+        responsavelId: getUserId(),
+        items: []
+    };
+
+    const rows = document.getElementById('equipamentos-adicionados-list').rows;
+    for (let row of rows) {
+        data.items.push({
+            tipo: row.cells[0].textContent,
+            marca: row.cells[1].textContent,
+            modelo: row.cells[2].textContent,
+            qty: parseInt(row.cells[3].textContent) || 1,
+            nSerie: row.cells[4].textContent,
+        });
+    }
+    data.totalUnidades = data.items.reduce((sum, item) => sum + item.qty, 0);
+
+    const collectionRef = collection(db, 'artifacts', appId, 'users', getUserId(), 'equipamentos');
+    try {
+        if (id) {
+            await updateDoc(doc(collectionRef, id), data);
+        } else {
+            await addDoc(collectionRef, data);
+        }
+        closeModal();
+    } catch(error) {
+        console.error("Erro ao salvar equipamento:", error);
+    } finally {
+        setButtonLoadingState(button, false);
+    }
+}
+
+async function handleEquipamentoListClick(e) {
+    const target = e.target.closest('button');
+    if (!target) return;
+    const id = target.dataset.id;
+    const collectionRef = collection(db, 'artifacts', appId, 'users', getUserId(), 'equipamentos');
+
+    if (target.classList.contains('edit-equipamento')) {
+        const docRef = doc(collectionRef, id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById('equipamento-modal-title').textContent = 'Editar Registo de Equipamento';
+            document.getElementById('equipamento-id').value = id;
+            document.getElementById('ref-recolha-equipamento').value = data.refRecolha;
+            document.getElementById('equipamento-lote').value = data.lote || '';
+            document.getElementById('equipamento-cliente-select').value = data.clienteId;
+            document.getElementById('equipamento-data-inicio').value = data.dataInicio;
+            document.getElementById('equipamento-data-fim').value = data.dataFim || '';
+            document.getElementById('equipamento-origem').value = data.origem;
+            document.getElementById('equipamento-peso-total').value = data.pesoTotal;
+            document.getElementById('equipamento-observacoes').value = data.observacoes;
+
+            const list = document.getElementById('equipamentos-adicionados-list');
+            list.innerHTML = '';
+            (data.items || []).forEach(item => addEquipamentoToTable(item));
+            updateTotalUnidades();
+            openModal('equipamento-modal');
+        }
+    }
+    if (target.classList.contains('delete-equipamento')) {
+        showConfirmationModal('Apagar Registo', `Tem a certeza que quer apagar este registo de equipamento?`, async () => {
+            await deleteDoc(doc(collectionRef, id));
+        });
+    }
+}
+
+async function handleNewMateriaPrima() {
+    document.getElementById('materia-prima-modal-title').textContent = 'Novo Registo de Matéria-Prima';
+    document.getElementById('materia-prima-form').reset();
+     document.getElementById('materia-prima-id').value = '';
+    await renderMateriaPrimaRows();
+    openModal('materia-prima-modal');
+}
+
+async function saveMateriaPrima(e) {
+    e.preventDefault();
+    const button = e.currentTarget.querySelector('button[type="submit"]');
+    setButtonLoadingState(button, true);
+    const id = document.getElementById('materia-prima-id').value;
+    const select = document.getElementById('materia-prima-cliente-select');
+    const data = {
+        refRecolha: document.getElementById('ref-recolha-materia').value,
+        lote: document.getElementById('materia-prima-lote').value,
+        clienteId: select.value,
+        clienteNome: select.options[select.selectedIndex].text,
+        dataInicio: document.getElementById('materia-prima-data-inicio').value,
+        dataFim: document.getElementById('materia-prima-data-fim').value,
+        origem: document.getElementById('materia-prima-origem').value,
+        responsavelNome: getCurrentUserNome(),
+        responsavelId: getUserId(),
+        quantidades: [],
+        pesoTotal: 0
+    };
+
+    let totalKg = 0;
+    document.querySelectorAll('.materia-prima-card').forEach(card => {
+        const qtyInput = card.querySelector('.materia-prima-qty');
+        const unitSelect = card.querySelector('.materia-prima-unit');
+        const qty = parseFloat(qtyInput.value) || 0;
+
+        if (qty > 0) {
+            const nome = qtyInput.dataset.nome;
+            const unit = unitSelect.value;
+            data.quantidades.push({ nome, qty, unit });
+            totalKg += (unit === 't') ? qty * 1000 : qty;
+        }
+    });
+    data.pesoTotal = totalKg;
+
+    const collectionRef = collection(db, 'artifacts', appId, 'users', getUserId(), 'materiaPrima');
+    try {
+         if (id) {
+            await updateDoc(doc(collectionRef, id), data);
+        } else {
+            await addDoc(collectionRef, data);
+        }
+        closeModal();
+    } catch (error) {
+         console.error("Erro ao salvar matéria-prima:", error);
+    } finally {
+        setButtonLoadingState(button, false);
+    }
+}
+
+async function handleMateriaPrimaListClick(e) {
+    const target = e.target.closest('button');
+    if (!target) return;
+    const id = target.dataset.id;
+    const collectionRef = collection(db, 'artifacts', appId, 'users', getUserId(), 'materiaPrima');
+
+    if (target.classList.contains('edit-materia-prima')) {
+        const docRef = doc(collectionRef, id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById('materia-prima-modal-title').textContent = 'Editar Registo de Matéria-Prima';
+            document.getElementById('materia-prima-id').value = id;
+            document.getElementById('ref-recolha-materia').value = data.refRecolha;
+            document.getElementById('materia-prima-lote').value = data.lote || '';
+            document.getElementById('materia-prima-cliente-select').value = data.clienteId;
+            document.getElementById('materia-prima-data-inicio').value = data.dataInicio;
+            document.getElementById('materia-prima-data-fim').value = data.dataFim || '';
+            document.getElementById('materia-prima-origem').value = data.origem;
+
+            await renderMateriaPrimaRows();
+             if(data.quantidades && Array.isArray(data.quantidades)) {
+                data.quantidades.forEach(item => {
+                    const input = document.querySelector(`.materia-prima-qty[data-nome="${item.nome}"]`);
+                    const select = document.querySelector(`.materia-prima-card:has(.materia-prima-qty[data-nome="${item.nome}"]) .materia-prima-unit`);
+                    if (input) input.value = item.qty;
+                    if (select) select.value = item.unit;
+                });
+            }
+            updateTotalPeso();
+            openModal('materia-prima-modal');
+        }
+    }
+    if (target.classList.contains('delete-materia-prima')) {
+        showConfirmationModal('Apagar Registo', `Tem a certeza que quer apagar este registo de matéria-prima?`, async () => {
+            await deleteDoc(doc(collectionRef, id));
+        });
+    }
+}
+
+async function renderMateriaPrimaRows() {
+    const container = document.getElementById('materia-prima-quantidades-container');
+    const materiasPrimasDisponiveis = getLiveProdutos().filter(p => p.categoria === 'Matéria-prima' && p.origem === 'Produção');
+    container.innerHTML = materiasPrimasDisponiveis.map(mp => `
+        <div class="materia-prima-card border rounded-lg p-3 shadow-sm">
+            <label class="block text-sm font-medium text-gray-700 mb-1">${mp.nome}</label>
+            <div class="flex gap-2">
+                <input type="number" step="0.01" data-nome="${mp.nome}" class="materia-prima-qty w-2/3 border rounded p-1" placeholder="0.00">
+                <select class="materia-prima-unit w-1/3 border rounded p-1 text-sm">
+                    <option value="kg">Kg</option>
+                    <option value="t">Ton</option>
+                </select>
+            </div>
+        </div>
+    `).join('');
+    updateTotalPeso();
+}
+
 export {
     attachFirestoreListeners,
     detachFirestoreListeners,
@@ -545,5 +754,11 @@ export {
     getLiveProdutos,
     liveEquipamentos,
     liveMateriaPrima,
-    liveEcopontoRegistos
+    liveEcopontoRegistos,
+    handleNewEquipamento,
+    saveEquipamento,
+    handleEquipamentoListClick,
+    handleNewMateriaPrima,
+    saveMateriaPrima,
+    handleMateriaPrimaListClick
 };
